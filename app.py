@@ -95,7 +95,7 @@ st.divider()
 # =====================================================
 # Carga de datos
 # =====================================================
-CSV_PATH = "mediciones_completas_etiquetadas.csv"
+CSV_PATH = "data/mediciones_completas_etiquetadas.csv"
 
 @st.cache_data(show_spinner=False)
 def load_data(path: str) -> pd.DataFrame:
