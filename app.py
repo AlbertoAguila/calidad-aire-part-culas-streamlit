@@ -71,4 +71,63 @@ st.subheader("Evolución temporal de las partículas")
 
 df_long = df[["timestamp"] + selected_vars].melt(
     id_vars="timestamp",
-    var_name="Varia_
+    var_name="Variable",
+    value_name="Concentracion_ug_m3"
+).dropna()
+
+chart = (
+    alt.Chart(df_long)
+    .mark_line()
+    .encode(
+        x=alt.X("timestamp:T", title="Tiempo"),
+        y=alt.Y("Concentracion_ug_m3:Q", title="Concentración (µg/m³)"),
+        color=alt.Color("Variable:N", title="Partícula"),
+        tooltip=[
+            alt.Tooltip("timestamp:T", title="Fecha y hora"),
+            alt.Tooltip("Variable:N", title="Variable"),
+            alt.Tooltip("Concentracion_ug_m3:Q", format=".2f", title="µg/m³")
+        ]
+    )
+    .interactive()
+)
+
+st.altair_chart(chart, use_container_width=True)
+
+# -----------------------------
+# Perfil horario medio
+# -----------------------------
+st.subheader("Perfil horario medio")
+
+df["hora"] = df["timestamp"].dt.hour
+df_hourly = df.groupby("hora")[selected_vars].mean().reset_index()
+
+df_hourly_long = df_hourly.melt(
+    id_vars="hora",
+    var_name="Variable",
+    value_name="Media_ug_m3"
+)
+
+chart_hourly = (
+    alt.Chart(df_hourly_long)
+    .mark_line(point=True)
+    .encode(
+        x=alt.X("hora:O", title="Hora del día"),
+        y=alt.Y("Media_ug_m3:Q", title="Concentración media (µg/m³)"),
+        color=alt.Color("Variable:N", title="Partícula"),
+        tooltip=[
+            alt.Tooltip("hora:O", title="Hora"),
+            alt.Tooltip("Variable:N", title="Variable"),
+            alt.Tooltip("Media_ug_m3:Q", format=".2f", title="µg/m³")
+        ]
+    )
+)
+
+st.altair_chart(chart_hourly, use_container_width=True)
+
+# -----------------------------
+# Nota final
+# -----------------------------
+st.info(
+    "Los valores mostrados corresponden a mediciones reales en un entorno doméstico. "
+    "Los resultados deben interpretarse como análisis de tendencias y patrones temporales."
+)
