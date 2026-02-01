@@ -2,43 +2,73 @@ import pandas as pd
 import altair as alt
 import streamlit as st
 
-st.set_page_config(page_title="Calidad del aire", layout="wide")
-st.title("Calidad del aire - Dashboard")
+# -----------------------------
+# Configuración de la app
+# -----------------------------
+st.set_page_config(
+    page_title="Calidad del aire",
+    layout="wide"
+)
 
-CSV_PATH = "mediciones_completas_etiquetadas.csv"
+st.title("Calidad del aire - Dashboard")
+st.write("Análisis de calidad del aire interior con especial atención a partículas en suspensión.")
+
+# -----------------------------
+# Carga de datos
+# -----------------------------
+CSV_PATH = "data/mediciones_completas_etiquetadas.csv"
 
 @st.cache_data
 def load_data(path: str) -> pd.DataFrame:
     df = pd.read_csv(path)
+
+    # Parseo de tiempo
     df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
-    df = df.dropna(subset=["timestamp"]).sort_values("timestamp")
+
+    # Limpieza básica
+    df = df.dropna(subset=["timestamp"])
+    df = df.sort_values("timestamp")
+
     return df
 
 df = load_data(CSV_PATH)
 
-st.write(f"Filas: {len(df):,}")
-st.dataframe(df.head(50), use_container_width=True)
+st.success(f"Datos cargados correctamente ({len(df)} registros)")
 
-vars_pm = ["PM1_ug_m3", "PM2_5_ug_m3", "PM4_ug_m3", "PM10_ug_m3"]
-vars_exist = [c for c in vars_pm if c in df.columns]
+# -----------------------------
+# Vista rápida de los datos
+# -----------------------------
+with st.expander("Ver primeras filas del dataset"):
+    st.dataframe(df.head(50), use_container_width=True)
 
-st.subheader("Partículas - evolución temporal")
-sel = st.multiselect("Series", vars_exist, default=vars_exist)
+# -----------------------------
+# Selección de variables de partículas
+# -----------------------------
+pm_vars = [
+    "PM1_ug_m3",
+    "PM2_5_ug_m3",
+    "PM4_ug_m3",
+    "PM10_ug_m3"
+]
 
-if sel:
-    long_df = df[["timestamp"] + sel].melt("timestamp", var_name="variable", value_name="ug_m3").dropna()
-    chart = (
-        alt.Chart(long_df)
-        .mark_line()
-        .encode(
-            x=alt.X("timestamp:T", title="Tiempo"),
-            y=alt.Y("ug_m3:Q", title="µg/m³"),
-            color="variable:N",
-            tooltip=["timestamp:T", "variable:N", "ug_m3:Q"],
-        )
-        .interactive()
-    )
-    st.altair_chart(chart, use_container_width=True)
-else:
-    st.info("Selecciona al menos una serie.")
+pm_vars = [v for v in pm_vars if v in df.columns]
 
+st.subheader("Selección de partículas")
+selected_vars = st.multiselect(
+    "Variables a visualizar",
+    options=pm_vars,
+    default=pm_vars
+)
+
+if not selected_vars:
+    st.warning("Selecciona al menos una variable para mostrar el gráfico.")
+    st.stop()
+
+# -----------------------------
+# Gráfico temporal
+# -----------------------------
+st.subheader("Evolución temporal de las partículas")
+
+df_long = df[["timestamp"] + selected_vars].melt(
+    id_vars="timestamp",
+    var_name="Varia_
