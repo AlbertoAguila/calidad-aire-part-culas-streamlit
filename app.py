@@ -103,8 +103,8 @@ def load_data(path: str) -> pd.DataFrame:
     df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
     df = df.dropna(subset=["timestamp"]).sort_values("timestamp")
     
-    # Convertir todas las columnas numéricas
-    numeric_cols = ["Temperatura_C", "Humedad_porc", "CO2_ppm", 
+    # Convertir todas las columnas numéricas (nombres correctos según tu CSV)
+    numeric_cols = ["temperatura_C", "humedad_relativa_pct", "CO2_ppm", 
                     "PM1_ug_m3", "PM2_5_ug_m3", "PM4_ug_m3", "PM10_ug_m3"]
     
     for col in numeric_cols:
@@ -177,12 +177,12 @@ st.markdown("## 📊 Parámetros Básicos Medidos")
 col1, col2, col3 = st.columns(3)
 
 # Verificar qué columnas existen
-has_temp = "Temperatura_C" in df_f.columns
-has_hum = "Humedad_porc" in df_f.columns
+has_temp = "temperatura_C" in df_f.columns
+has_hum = "humedad_relativa_pct" in df_f.columns
 has_co2 = "CO2_ppm" in df_f.columns
 
 if has_temp:
-    temp_mean = df_f["Temperatura_C"].mean()
+    temp_mean = df_f["temperatura_C"].mean()
     with col1:
         st.markdown(f"""
         <div style='background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
@@ -196,7 +196,7 @@ if has_temp:
         """, unsafe_allow_html=True)
 
 if has_hum:
-    hum_mean = df_f["Humedad_porc"].mean()
+    hum_mean = df_f["humedad_relativa_pct"].mean()
     with col2:
         st.markdown(f"""
         <div style='background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); 
@@ -310,7 +310,7 @@ with tab1:
             fig_t = go.Figure()
             fig_t.add_trace(go.Scatter(
                 x=df_f["timestamp"], 
-                y=df_f["Temperatura_C"],
+                y=df_f["temperatura_C"],
                 mode='lines',
                 line=dict(color='#f59e0b', width=2.5),
                 fill='tozeroy',
@@ -331,7 +331,7 @@ with tab1:
             fig_h = go.Figure()
             fig_h.add_trace(go.Scatter(
                 x=df_f["timestamp"], 
-                y=df_f["Humedad_porc"],
+                y=df_f["humedad_relativa_pct"],
                 mode='lines',
                 line=dict(color='#3b82f6', width=2.5),
                 fill='tozeroy',
@@ -463,9 +463,9 @@ with tab4:
     # Seleccionar columnas numéricas disponibles
     numeric_cols_available = []
     if has_temp:
-        numeric_cols_available.append("Temperatura_C")
+        numeric_cols_available.append("temperatura_C")
     if has_hum:
-        numeric_cols_available.append("Humedad_porc")
+        numeric_cols_available.append("humedad_relativa_pct")
     if has_co2:
         numeric_cols_available.append("CO2_ppm")
     numeric_cols_available.extend(pm_available)
